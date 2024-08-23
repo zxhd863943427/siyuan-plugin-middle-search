@@ -38,7 +38,7 @@ export default class PluginSample extends Plugin {
             config: {
                 position: "LeftBottom",
                 size: { width: 200, height: 0 },
-                icon: "iconSaving",
+                icon: "iconZoomIn",
                 title: "Custom Dock",
                 hotkey: "⌥⌘W",
             },
