@@ -68,3 +68,10 @@ interface SearchItem{
     content:string;
     doc:string
 }
+
+interface SearchSelectResult{
+    id:string;
+    content:string;
+    doc:string;
+    searchText:string
+}

@@ -7,7 +7,7 @@
     const dispatch = createEventDispatcher()
 
     
-    function selectSearchResult({detail}) {
+    function selectSearchResult({detail}:CustomEvent<SearchItem>) {
         console.log(detail)
         dispatch('selectSearchResult', detail);
     } 
