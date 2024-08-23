@@ -63,3 +63,8 @@ interface IResExportResources {
     path: string;
 }
 
+interface SearchItem{
+    id:string;
+    content:string;
+    doc:string
+}

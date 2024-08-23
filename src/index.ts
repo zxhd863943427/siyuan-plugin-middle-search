@@ -22,6 +22,8 @@ import "@/index.scss";
 
 import HelloExample from "@/hello.svelte";
 import SettingExample from "@/setting-example.svelte";
+import SearchDock from "@/search-dock.svelte"
+import SearchList from "@/libs/components/search-list.svelte"
 
 import { SettingUtils } from "./libs/setting-utils";
 import { svelteDialog } from "./libs/dialog";
@@ -134,30 +136,18 @@ export default class PluginSample extends Plugin {
                 console.log(DOCK_TYPE + " update");
             },
             init: (dock) => {
-                if (this.isMobile) {
-                    dock.element.innerHTML = `<div class="toolbar toolbar--border toolbar--dark">
-                    <svg class="toolbar__icon"><use xlink:href="#iconEmoji"></use></svg>
-                        <div class="toolbar__text">Custom Dock</div>
-                    </div>
-                    <div class="fn__flex-1 plugin-sample__custom-dock">
-                        ${dock.data.text}
-                    </div>
-                    </div>`;
-                } else {
-                    dock.element.innerHTML = `<div class="fn__flex-1 fn__flex-column">
-                    <div class="block__icons">
-                        <div class="block__logo">
-                            <svg class="block__logoicon"><use xlink:href="#iconEmoji"></use></svg>
-                            Custom Dock
-                        </div>
-                        <span class="fn__flex-1 fn__space"></span>
-                        <span data-type="min" class="block__icon b3-tooltips b3-tooltips__sw" aria-label="Min ${adaptHotkey("⌘W")}"><svg class="block__logoicon"><use xlink:href="#iconMin"></use></svg></span>
-                    </div>
-                    <div class="fn__flex-1 plugin-sample__custom-dock">
-                        ${dock.data.text}
-                    </div>
-                    </div>`;
-                }
+                new SearchDock({
+                    target: dock.element,
+                    props:{
+                        currentSearchResults:testSearchResult
+                    }
+                })
+                // new SearchList({
+                //     target:dock.element,
+                //     props:{
+                //         searchResults:testSearchResult
+                //     }
+                // })
             },
             destroy() {
                 console.log("destroy dock:", DOCK_TYPE);
@@ -941,3 +931,26 @@ export default class PluginSample extends Plugin {
         }
     }
 }
+
+
+const testSearchResult:SearchItem[] = [{
+    id:"1111",
+    content:"2222",
+    doc:"2222"
+},{
+    id:"1111",
+    content:"2222",
+    doc:"2222"
+},{
+    id:"1111",
+    content:"2222",
+    doc:"2222"
+},{
+    id:"1111",
+    content:"2222",
+    doc:"2222"
+},{
+    id:"1111",
+    content:"2222",
+    doc:"2222"
+}]

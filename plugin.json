@@ -1,5 +1,5 @@
 {
-  "name": "plugin-sample-vite-svelte",
+  "name": "siyuan-plugin-middle-search",
   "author": "frostime",
   "url": "https://github.com/siyuan-note/plugin-sample-vite-svelte",
   "version": "0.3.5",
@@ -20,8 +20,8 @@
     "desktop-window"
   ],
   "displayName": {
-    "en_US": "Plugin sample with vite and svelte",
-    "zh_CN": "插件样例 vite + svelte 版"
+    "en_US": "middle-search",
+    "zh_CN": "中级搜索"
   },
   "description": {
     "en_US": "SiYuan plugin sample with vite and svelte",
