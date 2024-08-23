@@ -24,8 +24,8 @@
     "zh_CN": "中级搜索"
   },
   "description": {
-    "en_US": "SiYuan plugin sample with vite and svelte",
-    "zh_CN": "使用 vite 和 svelte 开发的思源插件样例"
+    "en_US": "",
+    "zh_CN": "更简单存粹的搜索插件"
   },
   "readme": {
     "en_US": "README.md",
@@ -37,6 +37,6 @@
     ]
   },
   "keywords": [
-    "plugin", "sample", "插件样例"
+    "plugin", "search"
   ]
 }
