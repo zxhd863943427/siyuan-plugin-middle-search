@@ -73,5 +73,5 @@ interface SearchSelectResult{
     id:string;
     content:string;
     doc:string;
-    searchText:string
+    searchKeywordList:string[]
 }

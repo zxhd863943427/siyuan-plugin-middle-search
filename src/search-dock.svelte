@@ -6,6 +6,7 @@
     export let currentSearchResults:SearchItem[]
     const once_search_num = 20
     let searchText = ""
+    let searchKeywordList:string[] = []
     let total_num = 0
     let max_search_num = 5000
     let typingTimer: number | undefined;
@@ -14,7 +15,7 @@
 
     function selectSearchResult({detail}:CustomEvent<SearchItem>) {
         console.log(detail)
-        let result:SearchSelectResult = {...detail,searchText:searchText}
+        let result:SearchSelectResult = {...detail,searchKeywordList:searchKeywordList}
         dispatch('selectSearchResult', result);
     } 
 
@@ -24,26 +25,22 @@
         typingTimer = setTimeout(InputHelper,500) as unknown as number
     }
     async function InputHelper() {
-        let {data} = await fetchSyncPost("/api/query/sql",{stmt:`SELECT count(*) as total_num FROM blocks_fts WHERE blocks_fts MATCH 'content:"${searchText}"'  and blocks_fts.type in ('d','h','c','m','t','p')`})
+        searchKeywordList = searchText.trim().split(" ")
+        let searchQueryInput = `"` + searchKeywordList.join(`" AND "`) + `"`
+        let {data} = await fetchSyncPost("/api/query/sql",{stmt:`SELECT count(*) as total_num FROM blocks_fts WHERE blocks_fts MATCH 'content:${searchQueryInput}'  and blocks_fts.type in ('d','h','c','m','t','p')`})
         currentSearchResults = []
-        //结果为空
-        if ((data as number[]).length === 0){
+        //结果为空或错误
+        if (!data || (data as number[]).length === 0){
             total_num = 0
             return
         }
 
         total_num = data[0].total_num
         for(let index = 0;index < total_num && index < max_search_num;index+=once_search_num){
-            let result = await fetchSyncPost("/api/query/sql",{stmt:`SELECT blocks_fts.id as id, blocks_fts.content as content, blocks.content as doc  FROM blocks_fts join blocks WHERE blocks_fts.root_id = blocks.id and blocks_fts MATCH 'content:"${searchText}"'  and blocks_fts.type in ('d','h','c','m','t','p') order by blocks_fts.root_id limit ${once_search_num} offset ${index}`})
+            let result = await fetchSyncPost("/api/query/sql",{stmt:`SELECT blocks_fts.id as id, blocks_fts.content as content, blocks.content as doc  FROM blocks_fts join blocks WHERE blocks_fts.root_id = blocks.id and blocks_fts MATCH 'content:${searchQueryInput}'  and blocks_fts.type in ('d','h','c','m','t','p') order by blocks_fts.root_id limit ${once_search_num} offset ${index}`})
             let onceSearchResult:SearchItem[] = result.data
             onceSearchResult = onceSearchResult.map((item:SearchItem)=>{
-                let firstIndex = item.content.indexOf(searchText)
-                const startIndex = Math.max(0, firstIndex - 5);
-    
-                // 构建新的字符串
-                const resultString = '...' + item.content.substring(startIndex);
-                item.content = resultString
-                item.content = item.content.replace(searchText,`<mark>${searchText}</mark>`)
+                item.content = addMark(item.content,searchKeywordList)
        
                 return item
             })
@@ -51,6 +48,33 @@
         }
         currentSearchResults = currentSearchResults
         console.log(currentSearchResults)
+    }
+
+
+    function addMark(content:string,searchValues:string[]){
+        let indexList = []
+        searchValues.forEach((searchValue)=>{
+            let index = content.indexOf(searchValue)
+            if (index === -1){
+                return
+            }
+            indexList.push(content.indexOf(searchValue))
+   
+            
+        })
+
+        let firstIndex = Math.min(...indexList)
+        
+        const startIndex = Math.max(0, firstIndex - 5);
+        
+        // 构建新的字符串
+        let resultString = '...' + content.substring(startIndex);
+
+        searchValues.forEach((searchValue)=>{
+            resultString = resultString.replace(searchValue,`<mark>${searchValue}</mark>`)
+        })
+
+        return resultString
     }
     
     

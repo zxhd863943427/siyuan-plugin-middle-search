@@ -73,7 +73,7 @@ export default class PluginSample extends Plugin {
 
     onLayoutReady() {
         // this.loadData(STORAGE_NAME);
-        this.settingUtils.load();
+        // this.settingUtils.load();
         console.log(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
 
         console.log(
@@ -117,8 +117,8 @@ export default class PluginSample extends Plugin {
 
     async selectSearchResult({detail}:CustomEvent<SearchSelectResult>){
         console.log("in main",detail)
-        if (detail.id != cache){
-            cache = detail.id
+        if (!cache.inCache(detail)){
+            cache.setCache(detail)
             jumpToBlock(detail.id)
             CSS.highlights.clear()
             highlightManager.reset()
@@ -164,20 +164,21 @@ class HighlightManager{
         this.resolver()
         this.highlightDOM = result[0] as HTMLElement
         // 创建高亮对象
-        let ranges = highlightHitResult(this.highlightDOM,detail.searchText)
+        let ranges = highlightHitResults(this.highlightDOM,detail.searchKeywordList)
         let  searchResultsHighlight = new Highlight(...ranges.flat())
         this.resultCount = ranges.flat().length
         this.ranges = ranges.flat()
         // console.log(ranges.flat())
 
+        // 全部都高亮
+        ranges = highlightHitResults((document.querySelectorAll(`.layout-tab-container > div:not(.fn__none) .protyle-wysiwyg`)[0] as HTMLElement),detail.searchKeywordList)
+        let TotalSearchResultsHighlight = new Highlight(...ranges.flat())
+
         // 注册高亮
         CSS.highlights.set("search-results", searchResultsHighlight)
-        
-
-        // 全部都高亮
-        ranges = highlightHitResult((document.querySelectorAll(`.layout-tab-container > div:not(.fn__none) .protyle-wysiwyg`)[0] as HTMLElement),detail.searchText)
-        let TotalSearchResultsHighlight = new Highlight(...ranges.flat())
         CSS.highlights.set("search-results", TotalSearchResultsHighlight)
+
+        console.log(this.ranges,ranges)
 
         this.scrollIntoRanges(0)
    
@@ -213,7 +214,25 @@ class HighlightManager{
 
 let highlightManager:HighlightManager = new HighlightManager()
 
-let cache:string = ""
+
+
+class SearchCache{
+    cacheText:string
+    cacheID:string
+    constructor(){
+        this.cacheText = ""
+        this.cacheID = ""
+    }
+    setCache(detail:SearchSelectResult){
+        this.cacheText = detail.searchKeywordList.join(" ")
+        this.cacheID = detail.id
+    }
+    inCache(detail:SearchSelectResult){
+        return this.cacheText === detail.searchKeywordList.join(" ") && this.cacheID === detail.id
+    }
+}
+
+let cache = new SearchCache()
 
 function highlightHitResult(highlightDOM:HTMLElement,value: string) { // 搜索并高亮结果
 
@@ -283,6 +302,79 @@ function highlightHitResult(highlightDOM:HTMLElement,value: string) { // 搜索�
     // 滚动页面
     // scroollIntoRanges(resultIndex.value)
 }
+
+function highlightHitResults(highlightDOM: HTMLElement, values: string[]) {
+    // 获取文档根,后续直接对全文档文本进行搜索
+    const docRoot = highlightDOM;
+    const docText = docRoot.textContent.toLowerCase();
+
+    // 准备一个数组来保存所有文本节点
+    const allTextNodes = [];
+    let incr_lens = [];
+    let cur_len0 = 0;
+
+    const treeWalker = document.createTreeWalker(docRoot, NodeFilter.SHOW_TEXT);
+    let currentNode = treeWalker.nextNode();
+    while (currentNode) {
+        allTextNodes.push(currentNode);
+        cur_len0 += currentNode.textContent.length;
+        incr_lens.push(cur_len0);
+        currentNode = treeWalker.nextNode();
+    }
+
+    // 为空判断
+    const trimmedValues = values.map(value => value.trim().toLowerCase()).filter(value => value);
+    if (trimmedValues.length === 0) return;
+
+    let textNodeCnt = allTextNodes.length;
+
+    let txtNode;
+    let ranges = [];
+
+    trimmedValues.forEach(str => {
+        let startIndex = 0;
+        let endIndex = 0;
+        let cur_nodeIdx = 0;
+        while ((startIndex = docText.indexOf(str, startIndex)) !== -1) {
+            const range = document.createRange();
+            endIndex = startIndex + str.length;
+            try {
+                while (cur_nodeIdx < textNodeCnt - 1 && incr_lens[cur_nodeIdx] <= startIndex) {
+                    cur_nodeIdx++;
+                }
+                txtNode = allTextNodes[cur_nodeIdx];
+                let startOffset = startIndex - incr_lens[cur_nodeIdx] + txtNode.textContent.length;
+                range.setStart(txtNode, startOffset);
+
+                while (cur_nodeIdx < textNodeCnt - 1 && incr_lens[cur_nodeIdx] < endIndex) {
+                    cur_nodeIdx++;
+                }
+                txtNode = allTextNodes[cur_nodeIdx];
+                let endOffset = endIndex - incr_lens[cur_nodeIdx] + txtNode.textContent.length;
+                range.setEnd(txtNode, endOffset);
+                ranges.push(range);
+            } catch (error) {
+                console.error("Error setting range in node:", error);
+            }
+            startIndex = endIndex;
+        }
+    });
+
+    // 按起始位置对ranges进行排序
+    ranges.sort((a, b) => {
+        const compare = a.startContainer.compareDocumentPosition(b.startContainer);
+        if (compare & Node.DOCUMENT_POSITION_FOLLOWING) {
+            return -1;
+        } else if (compare & Node.DOCUMENT_POSITION_PRECEDING) {
+            return 1;
+        } else {
+            return a.startOffset - b.startOffset;
+        }
+    });
+
+    return ranges;
+}
+
 
 
 
