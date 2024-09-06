@@ -102,7 +102,10 @@
 }
 .middle-search-input{
     height: 2em;
-   
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
 }
 .botton{
     height: 2em;

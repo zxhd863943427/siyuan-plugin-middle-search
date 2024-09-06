@@ -23,5 +23,6 @@
         border: solid 1px var(--b3-theme-surface-lighter);
         border-radius: var(--b3-border-radius);
         box-shadow: inset 0 -1px 0 var(--b3-theme-surface-lighter);
+        white-space: nowrap;
     }
 </style>
