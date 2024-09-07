@@ -54,6 +54,8 @@
 
     function addMark(content:string,searchValues:string[]){
         let indexList = []
+        content = content.toLowerCase()
+        searchValues = searchValues.map(x=>x.trim().toLowerCase())
         searchValues.forEach((searchValue)=>{
             let index = content.indexOf(searchValue)
             if (index === -1){
