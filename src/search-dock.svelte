@@ -5,6 +5,7 @@
     
     export let currentSearchResults:SearchItem[]
     const once_search_num = 20
+    const FTS_TABLE = "blocks_fts_case_insensitive"
     let searchText = ""
     let searchKeywordList:string[] = []
     let total_num = 0
@@ -27,7 +28,7 @@
     async function InputHelper() {
         searchKeywordList = searchText.trim().split(" ")
         let searchQueryInput = `"` + searchKeywordList.join(`" AND "`) + `"`
-        let {data} = await fetchSyncPost("/api/query/sql",{stmt:`SELECT count(*) as total_num FROM blocks_fts WHERE blocks_fts MATCH 'content:${searchQueryInput}'  and blocks_fts.type in ('d','h','c','m','t','p')`})
+        let {data} = await fetchSyncPost("/api/query/sql",{stmt:`SELECT count(*) as total_num FROM ${FTS_TABLE} WHERE ${FTS_TABLE} MATCH 'content:${searchQueryInput}'  and ${FTS_TABLE}.type in ('d','h','c','m','t','p')`})
         currentSearchResults = []
         //结果为空或错误
         if (!data || (data as number[]).length === 0){
@@ -37,7 +38,7 @@
 
         total_num = data[0].total_num
         for(let index = 0;index < total_num && index < max_search_num;index+=once_search_num){
-            let result = await fetchSyncPost("/api/query/sql",{stmt:`SELECT blocks_fts.id as id, blocks_fts.content as content, blocks.content as doc  FROM blocks_fts join blocks WHERE blocks_fts.root_id = blocks.id and blocks_fts MATCH 'content:${searchQueryInput}'  and blocks_fts.type in ('d','h','c','m','t','p') order by blocks_fts.root_id limit ${once_search_num} offset ${index}`})
+            let result = await fetchSyncPost("/api/query/sql",{stmt:`SELECT ${FTS_TABLE}.id as id, ${FTS_TABLE}.content as content, blocks.content as doc  FROM ${FTS_TABLE} join blocks WHERE ${FTS_TABLE}.root_id = blocks.id and ${FTS_TABLE} MATCH 'content:${searchQueryInput}'  and ${FTS_TABLE}.type in ('d','h','c','m','t','p') order by ${FTS_TABLE}.root_id limit ${once_search_num} offset ${index}`})
             let onceSearchResult:SearchItem[] = result.data
             onceSearchResult = onceSearchResult.map((item:SearchItem)=>{
                 item.content = addMark(item.content,searchKeywordList)
