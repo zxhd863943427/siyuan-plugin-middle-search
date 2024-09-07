@@ -1,7 +1,7 @@
 {
   "name": "siyuan-plugin-middle-search",
-  "author": "frostime",
-  "url": "https://github.com/siyuan-note/plugin-sample-vite-svelte",
+  "author": "zxhd863943427",
+  "url": "https://github.com/zxhd863943427/siyuan-plugin-middle-search",
   "version": "0.3.5",
   "minAppVersion": "3.0.12",
   "backends": [
@@ -33,7 +33,7 @@
   },
   "funding": {
     "custom": [
-      ""
+      "https://afdian.net/a/zxhd86"
     ]
   },
   "keywords": [
